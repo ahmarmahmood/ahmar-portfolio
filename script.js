@@ -77,7 +77,7 @@ if (contactForm) {
         
         // Optional: Add client-side validation
         const name = this.querySelector('input[name="name"]').value;
-        const email = this.querySelector('input[name="_replyto"]').value;
+        const email = this.querySelector('input[name="email"]').value;
         const message = this.querySelector('textarea[name="message"]').value;
         
         if (!name || !email || !message) {
