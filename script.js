@@ -64,46 +64,44 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Contact form handling with Formspree
-const contactForm = document.querySelector('.contact-form');
+// Simple contact form with mailto
+const contactForm = document.getElementById('contactForm');
 if (contactForm) {
     contactForm.addEventListener('submit', function(e) {
-        const submitButton = this.querySelector('.btn');
-        const originalText = submitButton.textContent;
+        e.preventDefault();
         
-        // Show loading state
-        submitButton.textContent = 'Sending...';
-        submitButton.disabled = true;
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const message = document.getElementById('message').value.trim();
         
-        // Optional: Add client-side validation
-        const name = this.querySelector('input[name="name"]').value;
-        const email = this.querySelector('input[name="email"]').value;
-        const message = this.querySelector('textarea[name="message"]').value;
-        
+        // Basic validation
         if (!name || !email || !message) {
-            e.preventDefault();
             alert('Please fill in all fields.');
-            submitButton.textContent = originalText;
-            submitButton.disabled = false;
             return;
         }
         
         // Email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            e.preventDefault();
             alert('Please enter a valid email address.');
-            submitButton.textContent = originalText;
-            submitButton.disabled = false;
             return;
         }
         
-        // Let the form submit naturally to Formspree
-        // If submission fails, restore button
-        setTimeout(() => {
-            submitButton.textContent = originalText;
-            submitButton.disabled = false;
-        }, 10000);
+        // Create email content
+        const subject = encodeURIComponent(`Portfolio Contact from ${name}`);
+        const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
+        
+        // Create mailto link
+        const mailtoLink = `mailto:ahmar.aimy@gmail.com?cc=ahmar@senho.co&subject=${subject}&body=${body}`;
+        
+        // Open email client
+        window.location.href = mailtoLink;
+        
+        // Clear form
+        contactForm.reset();
+        
+        // Success message
+        alert('Your email client will open. Please send the email to complete your message.');
     });
 }
 
