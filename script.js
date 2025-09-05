@@ -64,44 +64,23 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Simple contact form with mailto
-const contactForm = document.getElementById('contactForm');
+// Contact form with Formsubmit
+const contactForm = document.querySelector('.contact-form');
 if (contactForm) {
     contactForm.addEventListener('submit', function(e) {
-        e.preventDefault();
+        const submitButton = this.querySelector('.btn');
+        const originalText = submitButton.textContent;
         
-        const name = document.getElementById('name').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const message = document.getElementById('message').value.trim();
+        // Show loading state
+        submitButton.textContent = 'Sending...';
+        submitButton.disabled = true;
         
-        // Basic validation
-        if (!name || !email || !message) {
-            alert('Please fill in all fields.');
-            return;
-        }
-        
-        // Email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            alert('Please enter a valid email address.');
-            return;
-        }
-        
-        // Create email content
-        const subject = encodeURIComponent(`Portfolio Contact from ${name}`);
-        const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
-        
-        // Create mailto link
-        const mailtoLink = `mailto:ahmar.aimy@gmail.com?cc=ahmar@senho.co&subject=${subject}&body=${body}`;
-        
-        // Open email client
-        window.location.href = mailtoLink;
-        
-        // Clear form
-        contactForm.reset();
-        
-        // Success message
-        alert('Your email client will open. Please send the email to complete your message.');
+        // Form will submit naturally to Formsubmit
+        // Reset button state after a delay in case user stays on page
+        setTimeout(() => {
+            submitButton.textContent = originalText;
+            submitButton.disabled = false;
+        }, 5000);
     });
 }
 

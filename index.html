@@ -457,11 +457,15 @@
                             <span>Islamabad, Pakistan</span>
                         </div>
                     </div>
-                    <form class="contact-form" id="contactForm">
-                        <input type="text" id="name" name="name" placeholder="Your Name" required>
-                        <input type="email" id="email" name="email" placeholder="Your Email" required>
-                        <textarea id="message" name="message" placeholder="Your Message" rows="5" required></textarea>
-                        <button type="submit" class="btn btn-primary">Send Email</button>
+                    <form class="contact-form" action="https://formsubmit.co/ahmar.aimy@gmail.com" method="POST">
+                        <input type="hidden" name="_cc" value="ahmar@senho.co">
+                        <input type="hidden" name="_subject" value="New Portfolio Contact Form Submission">
+                        <input type="hidden" name="_next" value="https://ahmarmahmood.vercel.app/thank-you.html">
+                        <input type="hidden" name="_captcha" value="false">
+                        <input type="text" name="name" placeholder="Your Name" required>
+                        <input type="email" name="email" placeholder="Your Email" required>
+                        <textarea name="message" placeholder="Your Message" rows="5" required></textarea>
+                        <button type="submit" class="btn btn-primary">Send Message</button>
                     </form>
                 </div>
             </div>
