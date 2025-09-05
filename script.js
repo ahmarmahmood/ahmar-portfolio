@@ -172,64 +172,9 @@ if (skillsSection) {
     skillsObserver.observe(skillsSection);
 }
 
-// Add CSS classes for animations
+// Animation CSS for dynamic elements
 const style = document.createElement('style');
 style.textContent = `
-    .hamburger.active span:nth-child(1) {
-        transform: rotate(-45deg) translate(-5px, 6px);
-    }
-    
-    .hamburger.active span:nth-child(2) {
-        opacity: 0;
-    }
-    
-    .hamburger.active span:nth-child(3) {
-        transform: rotate(45deg) translate(-5px, -6px);
-    }
-    
-    @media (max-width: 768px) {
-        .nav-links {
-            position: fixed;
-            top: 70px;
-            left: -100%;
-            width: 100%;
-            height: calc(100vh - 70px);
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(10px);
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            padding-top: 2rem;
-            transition: left 0.3s ease;
-            z-index: 999;
-        }
-        
-        .nav-links.active {
-            left: 0;
-        }
-        
-        .nav-links li {
-            margin: 1rem 0;
-        }
-        
-        .nav-links a {
-            font-size: 1.2rem;
-        }
-        
-        .menu-open {
-            overflow: hidden;
-        }
-    }
-    
-    .header.scroll-down {
-        transform: translateY(-100%);
-    }
-    
-    .header.scroll-up {
-        transform: translateY(0);
-        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-    }
-    
     .section {
         opacity: 0;
         transform: translateY(30px);
