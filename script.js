@@ -75,12 +75,9 @@ if (contactForm) {
         submitButton.textContent = 'Sending...';
         submitButton.disabled = true;
         
-        // Let the form submit naturally to Formspree
-        // The form will handle the actual submission
-        
         // Optional: Add client-side validation
         const name = this.querySelector('input[name="name"]').value;
-        const email = this.querySelector('input[name="email"]').value;
+        const email = this.querySelector('input[name="_replyto"]').value;
         const message = this.querySelector('textarea[name="message"]').value;
         
         if (!name || !email || !message) {
@@ -100,6 +97,13 @@ if (contactForm) {
             submitButton.disabled = false;
             return;
         }
+        
+        // Let the form submit naturally to Formspree
+        // If submission fails, restore button
+        setTimeout(() => {
+            submitButton.textContent = originalText;
+            submitButton.disabled = false;
+        }, 10000);
     });
 }
 
