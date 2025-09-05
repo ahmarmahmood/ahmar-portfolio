@@ -589,6 +589,8 @@ body {
     
     .timeline::before {
         left: 1rem;
+        width: 1px;
+        background: #e5e7eb;
     }
     
     .timeline-item {
@@ -598,6 +600,7 @@ body {
     
     .timeline-item::before {
         left: 1rem;
+        top: 1.5rem;
     }
     
     .timeline-date {
@@ -671,6 +674,18 @@ body {
     
     .hero-title {
         display: none;
+    }
+    
+    .timeline::before {
+        display: none;
+    }
+    
+    .timeline-item::before {
+        display: none;
+    }
+    
+    .timeline {
+        padding-left: 0;
     }
 }
 
