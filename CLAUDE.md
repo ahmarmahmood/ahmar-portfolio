@@ -8,11 +8,13 @@ This is a static portfolio website built with vanilla HTML, CSS, and JavaScript.
 
 ## Architecture
 
-The codebase follows a simple three-file structure:
+The codebase follows a clean file structure:
 
 - **index.html**: Single-page application with semantic sections (hero, about, experience, skills, education, contact)
 - **styles.css**: CSS-first approach with custom properties, grid/flexbox layouts, and mobile-first responsive design
 - **script.js**: Vanilla JavaScript for interactive features and animations
+- **Profile.pdf**: Resume/CV document for download
+- **ProfileMain2.jpeg**: Profile image asset
 
 ## Key Design Patterns
 
@@ -25,8 +27,8 @@ The codebase follows a simple three-file structure:
 ### JavaScript Features
 - Intersection Observer API for scroll-triggered animations
 - Mobile hamburger navigation with smooth transitions
-- Contact form validation and submission handling
 - Header scroll behavior (hide/show on scroll)
+- WhatsApp Business integration with floating action button
 
 ### Content Structure
 The website follows a standard portfolio layout:
@@ -34,11 +36,12 @@ The website follows a standard portfolio layout:
 - Timeline-based experience section with visual indicators
 - Tag-based skills display grouped by categories
 - Card-based education section
-- Contact section with both contact info and form
+- Contact section with contact information
+- WhatsApp Business floating button for direct communication
 
 ## Development Commands
 
-To view the website:
+To view the website locally:
 ```bash
 open index.html
 ```
@@ -55,6 +58,19 @@ npx http-server
 # Right-click index.html → "Open with Live Server"
 ```
 
+## Deployment
+
+This project is deployed on Vercel. The site automatically deploys on push to the main branch.
+
+To manually deploy:
+```bash
+# Install Vercel CLI if not already installed
+npm i -g vercel
+
+# Deploy
+vercel
+```
+
 ## External Dependencies
 
 - **Inter font family** from Google Fonts
@@ -65,10 +81,12 @@ npx http-server
 
 When updating content:
 - Replace placeholder text in HTML with actual professional information
-- Update the profile image URL in the hero section
+- Update the profile image URL in the hero section (`ProfileMain2.jpeg`)
 - Modify the LinkedIn URL in the hero buttons and contact section
 - Add/remove timeline items in the experience section
 - Update skill tags in the skills section categories
 - Replace contact information in the contact section
+- Update WhatsApp number in the floating button (currently: `923239855598`)
 
 The design system uses consistent spacing, typography, and color variables throughout the CSS for easy theme modifications.
+

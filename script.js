@@ -64,25 +64,6 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Contact form with Formsubmit
-const contactForm = document.querySelector('.contact-form');
-if (contactForm) {
-    contactForm.addEventListener('submit', function(e) {
-        const submitButton = this.querySelector('.btn');
-        const originalText = submitButton.textContent;
-        
-        // Show loading state
-        submitButton.textContent = 'Sending...';
-        submitButton.disabled = true;
-        
-        // Form will submit naturally to Formsubmit
-        // Reset button state after a delay in case user stays on page
-        setTimeout(() => {
-            submitButton.textContent = originalText;
-            submitButton.disabled = false;
-        }, 5000);
-    });
-}
 
 // Intersection Observer for animations
 const observerOptions = {
