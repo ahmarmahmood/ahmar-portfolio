@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Admin - Ahmar Mahmood</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="admin-body">
+
+    <!-- ── LOGIN SCREEN ─────────────────────────────────── -->
+    <div id="loginScreen" class="admin-login-screen">
+        <div class="admin-login-card">
+            <div class="admin-login-logo">
+                <div class="admin-login-avatar"><i class="fas fa-pen-nib"></i></div>
+                <h1>Ahmar Mahmood</h1>
+                <p>Blog Admin Panel</p>
+            </div>
+            <form id="loginForm" class="admin-login-form">
+                <div class="admin-field">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="your@email.com" required autocomplete="email">
+                </div>
+                <div class="admin-field">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <div id="loginError" class="admin-alert admin-alert-error" style="display:none;"></div>
+                <button type="submit" class="btn btn-admin-primary btn-full" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ── ADMIN DASHBOARD ──────────────────────────────── -->
+    <div id="adminDashboard" style="display:none;">
+
+        <header class="admin-header">
+            <div class="admin-header-inner">
+                <div class="admin-brand">
+                    <i class="fas fa-pen-nib"></i>
+                    <span>Blog Admin</span>
+                </div>
+                <div class="admin-header-actions">
+                    <a href="blog.html" target="_blank" class="btn-admin-ghost">
+                        <i class="fas fa-external-link-alt"></i> View Blog
+                    </a>
+                    <button onclick="logout()" class="btn-admin-ghost">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="admin-main">
+
+            <!-- Posts List -->
+            <div id="postsListView">
+                <div class="admin-section-header">
+                    <h2>All Posts</h2>
+                    <button onclick="showEditor()" class="btn btn-admin-primary">
+                        <i class="fas fa-plus"></i> New Post
+                    </button>
+                </div>
+                <div id="adminPostsList" class="admin-posts-list">
+                    <div class="admin-state-msg">
+                        <i class="fas fa-spinner fa-spin"></i> Loading posts...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Post Editor -->
+            <div id="postEditorView" style="display:none;">
+                <div class="admin-section-header">
+                    <h2 id="editorHeading">New Post</h2>
+                    <div class="admin-editor-actions">
+                        <button onclick="savePost(false)" class="btn-admin-ghost" id="saveDraftBtn">
+                            <i class="fas fa-save"></i> Save Draft
+                        </button>
+                        <button onclick="savePost(true)" class="btn btn-admin-primary" id="publishBtn">
+                            <i class="fas fa-globe"></i> Publish
+                        </button>
+                        <button onclick="showPostsList()" class="btn-admin-ghost">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+
+                <div id="editorAlert" class="admin-alert admin-alert-error" style="display:none;"></div>
+
+                <div class="admin-editor-wrap">
+                    <!-- Meta fields -->
+                    <div class="admin-meta-row">
+                        <div class="admin-field admin-field-grow">
+                            <label>Title <span class="req">*</span></label>
+                            <input type="text" id="postTitle" placeholder="Post title..." oninput="autoSlug()">
+                        </div>
+                        <div class="admin-field">
+                            <label>Slug <span class="req">*</span></label>
+                            <input type="text" id="postSlug" placeholder="post-url-slug" id="postSlug">
+                        </div>
+                    </div>
+                    <div class="admin-meta-row">
+                        <div class="admin-field admin-field-grow">
+                            <label>Excerpt</label>
+                            <input type="text" id="postExcerpt" placeholder="Short description shown on blog cards...">
+                        </div>
+                        <div class="admin-field">
+                            <label>Cover Image URL</label>
+                            <input type="url" id="postCoverImage" placeholder="https://...">
+                        </div>
+                    </div>
+
+                    <!-- Split Editor -->
+                    <div class="admin-editor-split">
+                        <div class="admin-editor-pane">
+                            <div class="admin-pane-header">
+                                <i class="fas fa-code"></i> Markdown
+                            </div>
+                            <textarea
+                                id="postContent"
+                                class="admin-md-input"
+                                placeholder="Write your post in Markdown...
+
+# Heading 1
+## Heading 2
+
+**Bold** and *italic*
+
+- Bullet list
+- Another item
+
+`inline code` or:
+
+```
+code block
+```
+"
+                                oninput="updatePreview()"
+                            ></textarea>
+                        </div>
+                        <div class="admin-editor-pane">
+                            <div class="admin-pane-header">
+                                <i class="fas fa-eye"></i> Preview
+                            </div>
+                            <div id="editorPreview" class="admin-preview-pane post-body"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" id="editingPostId">
+                <input type="hidden" id="editingIsPublished" value="false">
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://npkhtmdicvdeyhxvenzl.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_5P-iInDyLyDXZmyo0RMZew_T2zP6PqG';
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Track whether slug was auto-generated or manually edited
+        let slugUserEdited = false;
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('postSlug').addEventListener('input', () => {
+                slugUserEdited = true;
+            });
+        });
+
+        // ── Auth ──────────────────────────────────────────────
+        db.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                showDashboard();
+            } else {
+                showLogin();
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email    = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const btn      = document.getElementById('loginBtn');
+            const errDiv   = document.getElementById('loginError');
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+            btn.disabled  = true;
+            errDiv.style.display = 'none';
+
+            const { error } = await db.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                errDiv.textContent   = error.message;
+                errDiv.style.display = 'block';
+                btn.innerHTML        = '<i class="fas fa-sign-in-alt"></i> Sign In';
+                btn.disabled         = false;
+            }
+        });
+
+        async function logout() {
+            await db.auth.signOut();
+        }
+
+        function showLogin() {
+            document.getElementById('loginScreen').style.display    = 'flex';
+            document.getElementById('adminDashboard').style.display = 'none';
+        }
+
+        function showDashboard() {
+            document.getElementById('loginScreen').style.display    = 'none';
+            document.getElementById('adminDashboard').style.display = 'block';
+            loadAdminPosts();
+        }
+
+        // ── Posts List ────────────────────────────────────────
+        async function loadAdminPosts() {
+            const list = document.getElementById('adminPostsList');
+            list.innerHTML = '<div class="admin-state-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+
+            const { data: posts, error } = await db
+                .from('posts')
+                .select('id, title, slug, is_published, created_at, published_at')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                list.innerHTML = `<div class="admin-alert admin-alert-error">${error.message}</div>`;
+                return;
+            }
+
+            if (!posts || posts.length === 0) {
+                list.innerHTML = `
+                    <div class="admin-state-msg">
+                        <i class="fas fa-pen-fancy" style="font-size:2rem;color:#4f46e5;"></i>
+                        <p>No posts yet. Create your first one!</p>
+                    </div>`;
+                return;
+            }
+
+            list.innerHTML = posts.map(post => `
+                <div class="admin-post-row">
+                    <div class="admin-post-info">
+                        <span class="post-badge ${post.is_published ? 'badge-published' : 'badge-draft'}">
+                            <i class="fas ${post.is_published ? 'fa-globe' : 'fa-file-alt'}"></i>
+                            ${post.is_published ? 'Published' : 'Draft'}
+                        </span>
+                        <h3 class="admin-post-title">${safe(post.title)}</h3>
+                        <span class="admin-post-date">${formatDate(post.created_at)}</span>
+                    </div>
+                    <div class="admin-post-actions">
+                        ${post.is_published
+                            ? `<button onclick="togglePublish('${post.id}', false)" class="btn-admin-ghost btn-sm">
+                                   <i class="fas fa-eye-slash"></i> Unpublish
+                               </button>`
+                            : `<button onclick="togglePublish('${post.id}', true)" class="btn-sm btn-sm-publish">
+                                   <i class="fas fa-globe"></i> Publish
+                               </button>`
+                        }
+                        <button onclick="editPost('${post.id}')" class="btn-admin-ghost btn-sm">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button onclick="deletePost('${post.id}', '${safe(post.title)}')" class="btn-sm btn-sm-delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ── Editor ────────────────────────────────────────────
+        function showEditor(post = null) {
+            slugUserEdited = !!post; // Don't auto-generate slug when editing existing post
+
+            document.getElementById('postsListView').style.display  = 'none';
+            document.getElementById('postEditorView').style.display = 'block';
+            document.getElementById('editorHeading').textContent    = post ? 'Edit Post' : 'New Post';
+            document.getElementById('postTitle').value              = post?.title || '';
+            document.getElementById('postSlug').value               = post?.slug  || '';
+            document.getElementById('postExcerpt').value            = post?.excerpt || '';
+            document.getElementById('postCoverImage').value         = post?.cover_image_url || '';
+            document.getElementById('postContent').value            = post?.content || '';
+            document.getElementById('editingPostId').value          = post?.id || '';
+            document.getElementById('editingIsPublished').value     = post?.is_published ? 'true' : 'false';
+            document.getElementById('editorAlert').style.display    = 'none';
+
+            document.getElementById('publishBtn').innerHTML = (post?.is_published)
+                ? '<i class="fas fa-sync-alt"></i> Update'
+                : '<i class="fas fa-globe"></i> Publish';
+
+            updatePreview();
+            window.scrollTo(0, 0);
+        }
+
+        function showPostsList() {
+            document.getElementById('postsListView').style.display  = 'block';
+            document.getElementById('postEditorView').style.display = 'none';
+        }
+
+        async function editPost(id) {
+            const { data: post } = await db.from('posts').select('*').eq('id', id).single();
+            if (post) showEditor(post);
+        }
+
+        async function savePost(publish) {
+            const id           = document.getElementById('editingPostId').value;
+            const wasPublished = document.getElementById('editingIsPublished').value === 'true';
+            const title        = document.getElementById('postTitle').value.trim();
+            const slug         = document.getElementById('postSlug').value.trim();
+            const excerpt      = document.getElementById('postExcerpt').value.trim();
+            const coverImage   = document.getElementById('postCoverImage').value.trim();
+            const content      = document.getElementById('postContent').value;
+            const alertDiv     = document.getElementById('editorAlert');
+
+            if (!title || !slug) {
+                alertDiv.textContent   = 'Title and slug are required.';
+                alertDiv.style.display = 'block';
+                alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            const postData = {
+                title,
+                slug,
+                excerpt,
+                cover_image_url: coverImage,
+                content,
+                is_published: publish,
+            };
+
+            // Set published_at only on first publish
+            if (publish && !wasPublished) {
+                postData.published_at = new Date().toISOString();
+            }
+
+            const btn = publish
+                ? document.getElementById('publishBtn')
+                : document.getElementById('saveDraftBtn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            btn.disabled  = true;
+
+            let error;
+            if (id) {
+                ({ error } = await db.from('posts').update(postData).eq('id', id));
+            } else {
+                ({ error } = await db.from('posts').insert([postData]));
+            }
+
+            btn.innerHTML = originalHTML;
+            btn.disabled  = false;
+
+            if (error) {
+                alertDiv.textContent   = error.message;
+                alertDiv.style.display = 'block';
+                alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            alertDiv.style.display = 'none';
+            showPostsList();
+            loadAdminPosts();
+        }
+
+        async function togglePublish(id, publish) {
+            const update = { is_published: publish };
+            if (publish) update.published_at = new Date().toISOString();
+            await db.from('posts').update(update).eq('id', id);
+            loadAdminPosts();
+        }
+
+        async function deletePost(id, title) {
+            if (!confirm(`Delete "${title}"?\n\nThis cannot be undone.`)) return;
+            await db.from('posts').delete().eq('id', id);
+            loadAdminPosts();
+        }
+
+        // ── Helpers ───────────────────────────────────────────
+        function autoSlug() {
+            if (slugUserEdited) return;
+            const title = document.getElementById('postTitle').value;
+            document.getElementById('postSlug').value = title
+                .toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim();
+        }
+
+        function updatePreview() {
+            const md      = document.getElementById('postContent').value;
+            const preview = document.getElementById('editorPreview');
+            preview.innerHTML = DOMPurify.sanitize(marked.parse(md));
+        }
+
+        function formatDate(dateStr) {
+            return new Date(dateStr).toLocaleDateString('en-US', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            });
+        }
+
+        function safe(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+</html>

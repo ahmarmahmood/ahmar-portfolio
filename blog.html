@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog - Ahmar Mahmood</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body id="top">
+
+    <header class="header" id="header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <a href="index.html" class="brand-link"><h1>Ahmar Mahmood</h1></a>
+            </div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html#about">About</a></li>
+                <li><a href="index.html#services">Services</a></li>
+                <li><a href="index.html#experience">Experience</a></li>
+                <li><a href="index.html#skills">Skills</a></li>
+                <li><a href="index.html#education">Education</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+                <li><a href="blog.html" class="nav-active">Blog</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <main style="padding-top: 70px; min-height: 100vh;">
+
+        <!-- Blog List View -->
+        <div id="blogListView">
+            <section class="blog-hero">
+                <div class="container">
+                    <h1>Blog</h1>
+                    <p>Thoughts on technology, data engineering, automation &amp; leadership</p>
+                </div>
+            </section>
+            <section class="section">
+                <div class="container">
+                    <div id="postsGrid" class="blog-grid">
+                        <div class="blog-state-msg">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading posts...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Single Post View -->
+        <div id="singlePostView" style="display:none;">
+            <article class="blog-post-full">
+                <div class="container blog-post-container">
+                    <a href="blog.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> Back to Blog
+                    </a>
+                    <div id="postContent">
+                        <div class="blog-state-msg">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading post...</p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+    </main>
+
+    <div class="whatsapp-float">
+        <a href="https://wa.me/923239855598?text=Hi%20Ahmar,%20I%20visited%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project%20with%20you." target="_blank" class="whatsapp-btn">
+            <i class="fab fa-whatsapp"></i>
+            <span class="whatsapp-tooltip">Chat with us on WhatsApp</span>
+        </a>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Ahmar Mahmood. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://npkhtmdicvdeyhxvenzl.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_5P-iInDyLyDXZmyo0RMZew_T2zP6PqG';
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Header scroll effect
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            header.classList.toggle('scrolled', window.pageYOffset > 50);
+        });
+
+        // Mobile hamburger
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.getElementById('navLinks');
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('active');
+            document.body.classList.toggle('menu-open');
+        });
+        navLinks.querySelectorAll('a').forEach(a => {
+            a.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navLinks.classList.remove('active');
+                document.body.classList.remove('menu-open');
+            });
+        });
+
+        // Route: ?post=slug shows single post, otherwise show list
+        const params = new URLSearchParams(window.location.search);
+        const postSlug = params.get('post');
+
+        if (postSlug) {
+            loadPost(postSlug);
+        } else {
+            loadPosts();
+        }
+
+        async function loadPosts() {
+            const grid = document.getElementById('postsGrid');
+            try {
+                const { data: posts, error } = await db
+                    .from('posts')
+                    .select('id, title, slug, excerpt, cover_image_url, published_at, created_at')
+                    .eq('is_published', true)
+                    .order('published_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!posts || posts.length === 0) {
+                    grid.innerHTML = `
+                        <div class="blog-state-msg">
+                            <i class="fas fa-pen-fancy" style="color:#4f46e5;font-size:2.5rem;"></i>
+                            <p>No posts yet — check back soon!</p>
+                        </div>`;
+                    return;
+                }
+
+                grid.innerHTML = posts.map(post => `
+                    <article class="blog-card">
+                        ${post.cover_image_url
+                            ? `<div class="blog-card-image"><img src="${safe(post.cover_image_url)}" alt="${safe(post.title)}" loading="lazy"></div>`
+                            : `<div class="blog-card-image blog-card-placeholder"><i class="fas fa-pen-nib"></i></div>`
+                        }
+                        <div class="blog-card-body">
+                            <div class="blog-card-meta">
+                                <i class="far fa-calendar-alt"></i>
+                                ${formatDate(post.published_at || post.created_at)}
+                            </div>
+                            <h2 class="blog-card-title">
+                                <a href="blog.html?post=${encodeURIComponent(post.slug)}">${safe(post.title)}</a>
+                            </h2>
+                            ${post.excerpt ? `<p class="blog-card-excerpt">${safe(post.excerpt)}</p>` : ''}
+                            <a href="blog.html?post=${encodeURIComponent(post.slug)}" class="blog-read-more">
+                                Read More <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </article>
+                `).join('');
+
+            } catch (err) {
+                grid.innerHTML = `
+                    <div class="blog-state-msg">
+                        <i class="fas fa-exclamation-circle" style="color:#ef4444;font-size:2rem;"></i>
+                        <p>Failed to load posts. Please try again later.</p>
+                    </div>`;
+            }
+        }
+
+        async function loadPost(slug) {
+            document.getElementById('blogListView').style.display = 'none';
+            document.getElementById('singlePostView').style.display = 'block';
+
+            const contentDiv = document.getElementById('postContent');
+
+            try {
+                const { data: post, error } = await db
+                    .from('posts')
+                    .select('*')
+                    .eq('slug', slug)
+                    .eq('is_published', true)
+                    .single();
+
+                if (error || !post) throw new Error('Post not found');
+
+                document.title = `${post.title} - Ahmar Mahmood`;
+
+                const html = DOMPurify.sanitize(marked.parse(post.content || ''));
+
+                contentDiv.innerHTML = `
+                    ${post.cover_image_url
+                        ? `<div class="post-cover-image"><img src="${safe(post.cover_image_url)}" alt="${safe(post.title)}"></div>`
+                        : ''
+                    }
+                    <header class="post-header">
+                        <h1>${safe(post.title)}</h1>
+                        <div class="post-meta">
+                            <span><i class="far fa-calendar-alt"></i> ${formatDate(post.published_at || post.created_at)}</span>
+                        </div>
+                        ${post.excerpt ? `<p class="post-excerpt">${safe(post.excerpt)}</p>` : ''}
+                    </header>
+                    <div class="post-body">${html}</div>
+                `;
+
+            } catch (err) {
+                contentDiv.innerHTML = `
+                    <div class="blog-state-msg">
+                        <i class="fas fa-exclamation-circle" style="color:#ef4444;font-size:2rem;"></i>
+                        <p>Post not found.</p>
+                        <a href="blog.html" class="blog-read-more">← Back to Blog</a>
+                    </div>`;
+            }
+        }
+
+        function formatDate(dateStr) {
+            return new Date(dateStr).toLocaleDateString('en-US', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            });
+        }
+
+        function safe(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+</html>
