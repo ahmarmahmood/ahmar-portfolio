@@ -4,89 +4,74 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a static portfolio website built with vanilla HTML, CSS, and JavaScript. The site is designed to showcase professional information, experience, skills, and contact details in a modern, responsive layout.
+Static portfolio website with a Supabase-backed blog. No build tools — everything is vanilla HTML, CSS, and JavaScript served directly by Vercel.
+
+## File Structure
+
+- **index.html** — Single-page portfolio (hero, about, services, experience, skills, education, contact)
+- **blog.html** — Public blog: list view (default) and single post view (`?post=slug`)
+- **admin.html** — Private blog admin: login, CRUD editor with live Markdown preview and image uploads
+- **styles.css** — All styles for all three pages (sections: base → portfolio → blog → admin)
+- **script.js** — Portfolio-only JS (Intersection Observer animations, hamburger nav, header scroll)
+- **schema.sql** — Run once in Supabase SQL Editor to create the `posts` table and RLS policies
+- **CVs/** — Downloadable CV PDFs
 
 ## Architecture
 
-The codebase follows a clean file structure:
+### Routing
+`blog.html` and `admin.html` are separate pages. Blog post routing uses query params (`?post=slug`) — no server-side routing needed, works on Vercel static hosting.
 
-- **index.html**: Single-page application with semantic sections (hero, about, experience, skills, education, contact)
-- **styles.css**: CSS-first approach with custom properties, grid/flexbox layouts, and mobile-first responsive design
-- **script.js**: Vanilla JavaScript for interactive features and animations
-- **Profile.pdf**: Resume/CV document for download
-- **ProfileMain2.jpeg**: Profile image asset
-
-## Key Design Patterns
-
-### CSS Architecture
-- Mobile-first responsive design with breakpoints at 768px and 480px
-- CSS Grid for main layouts, Flexbox for component-level layouts
-- Custom CSS animations and transitions (no external animation libraries)
-- Color scheme centered around primary color `#4f46e5` (indigo)
-
-### JavaScript Features
-- Intersection Observer API for scroll-triggered animations
-- Mobile hamburger navigation with smooth transitions
-- Header scroll behavior (hide/show on scroll)
-- WhatsApp Business integration with floating action button
-
-### Content Structure
-The website follows a standard portfolio layout:
-- Hero section with name, title, description, and call-to-action
-- Timeline-based experience section with visual indicators
-- Tag-based skills display grouped by categories
-- Card-based education section
-- Contact section with contact information
-- WhatsApp Business floating button for direct communication
-
-## Development Commands
-
-To view the website locally:
-```bash
-open index.html
+### Supabase Integration
+Both `blog.html` and `admin.html` load the Supabase JS SDK from CDN and initialise the client with hardcoded constants at the top of each `<script>` block:
+```js
+const SUPABASE_URL = 'https://npkhtmdicvdeyhxvenzl.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_...';
 ```
+The publishable key is safe to be public. The `posts` table uses Row Level Security: anyone can read published posts (`is_published = true`), only authenticated users can write.
 
-For local development with live reload, use any static server:
+### Blog Admin Auth
+`admin.html` uses `db.auth.onAuthStateChange` to gate the UI — no session means the login screen shows. Admin accounts are created manually in the Supabase dashboard (Authentication → Users). There is no signup form.
+
+### Image Uploads
+Images are stored in the `blog-images` Supabase Storage bucket (public). `admin.html` supports three upload methods: file picker button (cover image), toolbar button (inserts at cursor), and Ctrl+V paste into the editor textarea.
+
+### CSS Layout
+- Primary colour: `#4f46e5` (indigo)
+- Breakpoints: 768px (tablet) and 480px (mobile)
+- Portfolio sections alternate between `background: #ffffff` and `.section-alt` (light grey gradient)
+- Blog and admin styles are appended at the end of `styles.css` under clearly marked comment blocks
+
+## Development
+
 ```bash
-# Python
+# Serve locally
 python -m http.server 8000
-
-# Node.js (if http-server is installed)
+# or
 npx http-server
-
-# VS Code Live Server extension
-# Right-click index.html → "Open with Live Server"
 ```
+
+Admin panel requires a live Supabase connection — it will not work by opening `admin.html` directly as a `file://` URL due to CORS. Use a local server.
 
 ## Deployment
 
-This project is deployed on Vercel. The site automatically deploys on push to the main branch.
+Vercel auto-deploys on push to `main` (GitHub: `ahmarmahmood/ahmar-portfolio`). No build step — files are served as-is.
 
-To manually deploy:
 ```bash
-# Install Vercel CLI if not already installed
-npm i -g vercel
-
-# Deploy
-vercel
+git push origin main
 ```
 
-## External Dependencies
+The project is linked to the "Ahmar Mahmood's projects" Vercel team (`ahmaraimy-6217`). Live at `https://www.ahmarmahmood.com`.
 
-- **Inter font family** from Google Fonts
-- **Font Awesome 6.0.0** for icons
-- No JavaScript frameworks or build tools
+## External Dependencies (CDN only)
 
-## Customization Guidelines
+- Google Fonts — Inter
+- Font Awesome 6.0.0 — icons
+- `@supabase/supabase-js@2` — database + auth + storage (`blog.html`, `admin.html`)
+- `marked@9` — Markdown → HTML rendering (`blog.html`, `admin.html`)
+- `dompurify@3` — sanitise rendered HTML (`blog.html`, `admin.html`)
 
-When updating content:
-- Replace placeholder text in HTML with actual professional information
-- Update the profile image URL in the hero section (`ProfileMain2.jpeg`)
-- Modify the LinkedIn URL in the hero buttons and contact section
-- Add/remove timeline items in the experience section
-- Update skill tags in the skills section categories
-- Replace contact information in the contact section
-- Update WhatsApp number in the floating button (currently: `923239855598`)
+## Supabase Setup (one-time)
 
-The design system uses consistent spacing, typography, and color variables throughout the CSS for easy theme modifications.
-
+1. Run `schema.sql` in Supabase SQL Editor
+2. Create Storage bucket named `blog-images` with public access enabled
+3. Create admin user: Supabase dashboard → Authentication → Users → Add user
