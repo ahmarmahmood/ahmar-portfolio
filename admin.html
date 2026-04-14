@@ -109,8 +109,14 @@
                             <input type="text" id="postExcerpt" placeholder="Short description shown on blog cards...">
                         </div>
                         <div class="admin-field">
-                            <label>Cover Image URL</label>
-                            <input type="url" id="postCoverImage" placeholder="https://...">
+                            <label>Cover Image</label>
+                            <div class="admin-img-field">
+                                <input type="url" id="postCoverImage" placeholder="https://... or upload →">
+                                <button type="button" class="btn-img-upload" onclick="document.getElementById('coverImageFile').click()" title="Upload cover image">
+                                    <i class="fas fa-upload"></i>
+                                </button>
+                                <input type="file" id="coverImageFile" accept="image/*" style="display:none" onchange="uploadCoverImage(this)">
+                            </div>
                         </div>
                     </div>
 
@@ -119,6 +125,11 @@
                         <div class="admin-editor-pane">
                             <div class="admin-pane-header">
                                 <i class="fas fa-code"></i> Markdown
+                                <button type="button" class="btn-toolbar-img" onclick="document.getElementById('contentImageFile').click()" title="Upload and insert image">
+                                    <i class="fas fa-image"></i> Insert Image
+                                </button>
+                                <input type="file" id="contentImageFile" accept="image/*" style="display:none" onchange="uploadContentImage(this)">
+                                <span class="toolbar-hint">or paste image (Ctrl+V)</span>
                             </div>
                             <textarea
                                 id="postContent"
@@ -412,6 +423,84 @@ code block
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;');
         }
+
+        // ── Image Upload ──────────────────────────────────────
+        async function uploadToStorage(file) {
+            const ext      = file.name.split('.').pop();
+            const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+            const { data, error } = await db.storage
+                .from('blog-images')
+                .upload(filename, file, { cacheControl: '3600', upsert: false });
+
+            if (error) throw error;
+
+            const { data: { publicUrl } } = db.storage
+                .from('blog-images')
+                .getPublicUrl(data.path);
+
+            return publicUrl;
+        }
+
+        async function uploadCoverImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const btn = document.querySelector('.btn-img-upload');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled  = true;
+            try {
+                const url = await uploadToStorage(file);
+                document.getElementById('postCoverImage').value = url;
+            } catch (err) {
+                alert('Image upload failed: ' + err.message);
+            }
+            btn.innerHTML = '<i class="fas fa-upload"></i>';
+            btn.disabled  = false;
+            input.value   = '';
+        }
+
+        async function uploadContentImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+            await insertImageIntoEditor(file);
+            input.value = '';
+        }
+
+        async function insertImageIntoEditor(file) {
+            const textarea = document.getElementById('postContent');
+            const btnLabel = document.querySelector('.btn-toolbar-img');
+            btnLabel.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            btnLabel.disabled  = true;
+
+            try {
+                const url      = await uploadToStorage(file);
+                const altText  = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+                const markdown = `\n![${altText}](${url})\n`;
+
+                const start = textarea.selectionStart;
+                const end   = textarea.selectionEnd;
+                textarea.value = textarea.value.slice(0, start) + markdown + textarea.value.slice(end);
+                textarea.selectionStart = textarea.selectionEnd = start + markdown.length;
+                textarea.focus();
+                updatePreview();
+            } catch (err) {
+                alert('Image upload failed: ' + err.message);
+            }
+
+            btnLabel.innerHTML = '<i class="fas fa-image"></i> Insert Image';
+            btnLabel.disabled  = false;
+        }
+
+        // Paste image directly into editor (Ctrl+V)
+        document.addEventListener('paste', async (e) => {
+            const textarea = document.getElementById('postContent');
+            if (document.activeElement !== textarea) return;
+            const items = Array.from(e.clipboardData?.items || []);
+            const imageItem = items.find(item => item.type.startsWith('image/'));
+            if (!imageItem) return;
+            e.preventDefault();
+            await insertImageIntoEditor(imageItem.getAsFile());
+        });
     </script>
 </body>
 </html>
